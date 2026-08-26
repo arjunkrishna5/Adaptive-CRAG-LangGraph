@@ -10,21 +10,4 @@ An advanced Agentic Retrieval-Augmented Generation (RAG) system built with **Lan
 
 ---
 
-## 🚀 Quick Setup (Phase 0)
-
-### 1. Create and Activate Virtual Environment
-```powershell
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-```
-
-### 2. Install Dependencies
-```powershell
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### 3. Setup Environment Keys
-```powershell
-Copy-Item .env.example .env
-```
+> 🚧 **Work in Progress**: The complete architecture documentation, workflow diagrams, benchmark evaluations, and detailed setup guides will be finalized upon project completion.
