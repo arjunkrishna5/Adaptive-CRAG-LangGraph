@@ -1,0 +1,27 @@
+﻿# Core Orchestration & State Machine
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+
+# LLM Providers
+langchain-groq>=0.2.0
+langchain-openai>=0.2.0
+
+# Vector Database & Embeddings
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+
+# Web Search Tool Fallback
+tavily-python>=0.5.0
+duckduckgo-search>=6.0.0
+
+# Data Validation & State Schemas
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# User Interface
+streamlit>=1.35.0
+
+# Evaluation & Metrics
+ragas>=0.1.10
+datasets>=2.19.0

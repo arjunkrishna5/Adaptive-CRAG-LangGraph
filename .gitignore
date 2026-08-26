@@ -1,0 +1,27 @@
+﻿# Python Environment & Bytecode
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment & Secrets (NEVER COMMIT API KEYS)
+.env
+.env.local
+
+# Local Vector Database & Cache
+.chroma/
+chroma_db/
+*.db
+*.sqlite3
+
+# Streamlit & IDE Cache
+.streamlit/
+.idea/
+.vscode/
+
+# Evaluation & Testing Artifacts
+.ragas/
+eval_results.json
