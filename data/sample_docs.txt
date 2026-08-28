@@ -1,0 +1,33 @@
+# Knowledge Base: Autonomous AI Agent Architectures & LangGraph Framework
+
+## Section 1: Overview of Agentic AI and LangGraph
+LangGraph is a library developed by LangChain for building stateful, multi-actor applications with Large Language Models (LLMs). Unlike linear chains or directed acyclic graphs (DAGs), LangGraph allows developers to create cyclic computational graphs. Cycles are essential for agentic behavior because they enable iterative reasoning, self-reflection, automated error recovery, and dynamic tool invocation loops.
+
+In LangGraph, an application is represented as a state machine where:
+1. **State:** A shared data structure (typically a TypedDict or Pydantic model) that maintains the current memory, conversation history, and intermediate variables across all steps.
+2. **Nodes:** Python functions or runnable objects that take the current state as input, perform a computation or tool call, and return an updated state.
+3. **Edges:** Rules that determine which node to execute next. These can be fixed standard edges or conditional edges that inspect the state dynamically and route execution.
+
+## Section 2: Retrieval-Augmented Generation (RAG) and Limitations
+Standard RAG systems follow a naive retrieve-then-read pipeline:
+- The user query is converted into a dense vector embedding.
+- The vector database performs approximate nearest neighbor search to retrieve the top-K relevant chunks.
+- The retrieved chunks and user query are injected into an LLM prompt to generate an answer.
+
+However, naive RAG suffers from three critical failure modes:
+1. **Retrieval Failure (Noise & Irrelevance):** Vector similarity does not guarantee semantic relevance. The database may return text chunks containing matching keywords that fail to address the core intent.
+2. **Knowledge Boundary Misses:** If the internal database lacks information about the query, the retrieval step still returns the "closest" available chunks, leading the LLM to hallucinate or generate misleading answers.
+3. **Unchecked Generation (Hallucinations):** The generation model may invent facts unsupported by the retrieved documents, producing confident but factually incorrect responses.
+
+## Section 3: Corrective RAG (CRAG) Mechanism
+Corrective RAG (CRAG) is an advanced RAG framework designed to eliminate the weaknesses of naive RAG through self-evaluation and dynamic fallback:
+1. **Retrieval Evaluation (Document Grader):** After retrieval, a lightweight LLM judge assesses whether the retrieved documents are genuinely relevant to the user query.
+2. **Confidence-Based Routing:**
+   - **Correct (High Relevance):** If the retrieved documents are relevant, the system proceeds directly to answer generation.
+   - **Incorrect (Low Relevance / Out of Domain):** If the retrieved documents are irrelevant or insufficient, the system triggers a query transformation (rewriting) step and executes an external web search fallback (using search engines like Tavily or DuckDuckGo) to fetch real-time, accurate context.
+   - **Ambiguous:** The system combines local context with web search results for comprehensive coverage.
+3. **Self-Reflective Hallucination Detection:** After generating an answer, a second LLM judge validates whether the generated text is strictly grounded in the retrieved facts.
+4. **Answer Relevance Check:** A final check ensures that the generated answer directly resolves the user's initial question. If not, the query is rewritten and re-evaluated in a self-correcting cycle.
+
+## Section 4: Nexus-X AI Autonomous Protocol (Domain Specific Fact)
+The Nexus-X Protocol is an internal enterprise orchestration engine designed for real-time edge devices. It utilizes the "Synapse-7" latency optimization algorithm, which compresses LLM inference token latency by 42% on ARM64 architectures. The Nexus-X engine requires a minimum operational memory of 8GB unified VRAM and runs on dual-cluster orchestration nodes configured with TLS 1.3 encryption.
