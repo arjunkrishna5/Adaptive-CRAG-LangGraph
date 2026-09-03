@@ -93,7 +93,7 @@ with st.sidebar:
     openai_ok = bool(openai_key and not openai_key.startswith("sk-your_"))
     tavily_ok = bool(tavily_key and not tavily_key.startswith("tvly-your_"))
 
-    llm_status = "Groq (Llama 3.3 70B)" if groq_ok else ("OpenAI (GPT-4o-mini)" if openai_ok else "Not configured")
+    llm_status = "Groq (Qwen 3.8 27B)" if groq_ok else ("OpenAI (GPT-4o-mini)" if openai_ok else "Not configured")
     search_status = "Tavily Search API" if tavily_ok else "DuckDuckGo Fallback"
 
     st.markdown(
@@ -153,77 +153,86 @@ prompt_input = st.chat_input("Ask a question about the system or any topic...")
 prompt_to_run = prompt_input or st.session_state.preset_prompt
 
 if prompt_to_run:
-    # Reset preset trigger
-    st.session_state.preset_prompt = None
+    # Validate API key presence before running graph
+    if not (groq_ok or openai_ok):
+        st.error(
+            "⚠️ **No Active LLM API Key Found!**\n\n"
+            "To run queries, please add your free **GROQ_API_KEY** in the `.env` file.\n"
+            "[Get a free Groq key here](https://console.groq.com/keys)."
+        )
+        st.session_state.preset_prompt = None
+    else:
+        # Reset preset trigger
+        st.session_state.preset_prompt = None
 
-    # Append user prompt
-    st.session_state.messages.append({"role": "user", "content": prompt_to_run})
-    with st.chat_message("user"):
-        st.markdown(prompt_to_run)
+        # Append user prompt
+        st.session_state.messages.append({"role": "user", "content": prompt_to_run})
+        with st.chat_message("user"):
+            st.markdown(prompt_to_run)
 
-    # Agent Execution Container
-    with st.chat_message("assistant"):
-        final_answer = ""
-        retrieved_sources = []
+        # Agent Execution Container
+        with st.chat_message("assistant"):
+            final_answer = ""
+            retrieved_sources = []
 
-        # Real-time Thought Process Visualizer
-        with st.status("🧠 Agent is analyzing and executing workflow...", expanded=True) as status:
-            initial_state: GraphState = {
-                "question": prompt_to_run,
-                "generation": "",
-                "web_search_needed": False,
-                "documents": [],
-                "retry_count": 0,
-            }
+            # Real-time Thought Process Visualizer
+            with st.status("🧠 Agent is analyzing and executing workflow...", expanded=True) as status:
+                initial_state: GraphState = {
+                    "question": prompt_to_run,
+                    "generation": "",
+                    "web_search_needed": False,
+                    "documents": [],
+                    "retry_count": 0,
+                }
 
-            try:
-                # Stream each node output as it finishes execution
-                for output in crag_app.stream(initial_state):
-                    for node_name, node_state in output.items():
-                        if node_name == "retrieve":
-                            docs = node_state.get("documents", [])
-                            st.write(f"🔍 **[Retrieve]** Pulled `{len(docs)}` candidate chunks from local ChromaDB.")
+                try:
+                    # Stream each node output as it finishes execution
+                    for output in crag_app.stream(initial_state):
+                        for node_name, node_state in output.items():
+                            if node_name == "retrieve":
+                                docs = node_state.get("documents", [])
+                                st.write(f"🔍 **[Retrieve]** Pulled `{len(docs)}` candidate chunks from local ChromaDB.")
 
-                        elif node_name == "grade_documents":
-                            docs = node_state.get("documents", [])
-                            web_needed = node_state.get("web_search_needed", False)
-                            st.write(
-                                f"⚖️ **[Grade Documents]** Preserved `{len(docs)}` relevant chunks. "
-                                f"Web search needed: **`{web_needed}`**"
-                            )
+                            elif node_name == "grade_documents":
+                                docs = node_state.get("documents", [])
+                                web_needed = node_state.get("web_search_needed", False)
+                                st.write(
+                                    f"⚖️ **[Grade Documents]** Preserved `{len(docs)}` relevant chunks. "
+                                    f"Web search needed: **`{web_needed}`**"
+                                )
 
-                        elif node_name == "transform_query":
-                            new_query = node_state.get("question", "")
-                            st.write(f"✍️ **[Transform Query]** Rewrote search terms to: *\"{new_query}\"*")
+                            elif node_name == "transform_query":
+                                new_query = node_state.get("question", "")
+                                st.write(f"✍️ **[Transform Query]** Rewrote search terms to: *\"{new_query}\"*")
 
-                        elif node_name == "web_search":
-                            st.write("🌐 **[Web Search]** Executed live external web search to augment context.")
+                            elif node_name == "web_search":
+                                st.write("🌐 **[Web Search]** Executed live external web search to augment context.")
 
-                        elif node_name == "generate":
-                            final_answer = node_state.get("generation", "")
-                            retrieved_sources = node_state.get("documents", [])
-                            st.write("📝 **[Generate & Inspect]** Synthesized answer and verified factual grounding.")
+                            elif node_name == "generate":
+                                final_answer = node_state.get("generation", "")
+                                retrieved_sources = node_state.get("documents", [])
+                                st.write("📝 **[Generate & Inspect]** Synthesized answer and verified factual grounding.")
 
-                status.update(label="✅ Agent Reasoning Complete!", state="complete", expanded=False)
+                    status.update(label="✅ Agent Reasoning Complete!", state="complete", expanded=False)
 
-            except Exception as e:
-                status.update(label="⚠️ Workflow Encountered an Issue", state="error", expanded=True)
-                final_answer = f"Error during execution: {e}"
+                except Exception as e:
+                    status.update(label="⚠️ Workflow Encountered an Issue", state="error", expanded=True)
+                    final_answer = f"Error during execution: {e}"
 
-        # Display Final Synthesized Answer
-        st.markdown(final_answer)
+            # Display Final Synthesized Answer
+            st.markdown(final_answer)
 
-        # Display Retrieved Sources Drawer
-        if retrieved_sources:
-            with st.expander("📄 View Retrieved Source Context"):
-                for i, src in enumerate(retrieved_sources, 1):
-                    src_type = src.metadata.get("source", "ChromaDB Chunk")
-                    st.markdown(f"**Source #{i} ({src_type}):**")
-                    st.code(src.page_content, language="markdown")
+            # Display Retrieved Sources Drawer
+            if retrieved_sources:
+                with st.expander("📄 View Retrieved Source Context"):
+                    for i, src in enumerate(retrieved_sources, 1):
+                        src_type = src.metadata.get("source", "ChromaDB Chunk")
+                        st.markdown(f"**Source #{i} ({src_type}):**")
+                        st.code(src.page_content, language="markdown")
 
-        # Save assistant turn to chat history
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": final_answer,
-            "sources": retrieved_sources,
-        })
+            # Save assistant turn to chat history
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": final_answer,
+                "sources": retrieved_sources,
+            })

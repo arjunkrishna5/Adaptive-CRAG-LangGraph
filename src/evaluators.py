@@ -53,7 +53,7 @@ class GradeAnswer(BaseModel):
 def get_judge_llm(temperature: float = 0):
     """
     Initializes and returns the judge LLM.
-    Prefers Groq (Llama 3.3 70B) for high-speed inference; falls back to OpenAI (GPT-4o-mini).
+    Prefers Groq (Qwen 3.8 27B) for high-speed inference; falls back to OpenAI (GPT-4o-mini).
     """
     groq_api_key = os.getenv("GROQ_API_KEY", "")
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
@@ -61,7 +61,7 @@ def get_judge_llm(temperature: float = 0):
     # Check for valid Groq key (not empty or placeholder)
     if groq_api_key and not groq_api_key.startswith("gsk_your_"):
         return ChatGroq(
-            model_name="llama-3.3-70b-versatile",
+            model_name="qwen/qwen3.8-27b",
             temperature=temperature,
             api_key=groq_api_key,
         )
@@ -74,9 +74,9 @@ def get_judge_llm(temperature: float = 0):
             api_key=openai_api_key,
         )
 
-    # Default fallback: Groq instance (will read from env directly if configured later)
+    # Default fallback: Groq instance
     return ChatGroq(
-        model_name="llama-3.3-70b-versatile",
+        model_name="qwen/qwen3.8-27b",
         temperature=temperature,
     )
 
