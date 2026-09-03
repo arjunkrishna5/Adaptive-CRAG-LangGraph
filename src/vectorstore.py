@@ -23,16 +23,23 @@ DEFAULT_CHROMA_DIR = os.path.join("data", "chroma_db")
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
 
+_CACHED_EMBEDDING_MODEL = None
+_CACHED_RETRIEVER = None
+
+
 def get_embedding_model() -> HuggingFaceEmbeddings:
     """
-    Initializes and returns the HuggingFace dense embedding model.
+    Initializes and returns a cached singleton HuggingFace dense embedding model.
     'all-MiniLM-L6-v2' maps sentences & paragraphs to a 384-dimensional dense vector space.
     """
-    return HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL_NAME,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},  # Enables exact cosine similarity via dot product
-    )
+    global _CACHED_EMBEDDING_MODEL
+    if _CACHED_EMBEDDING_MODEL is None:
+        _CACHED_EMBEDDING_MODEL = HuggingFaceEmbeddings(
+            model_name=EMBEDDING_MODEL_NAME,
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
+        )
+    return _CACHED_EMBEDDING_MODEL
 
 
 def load_and_split_documents(
@@ -117,8 +124,11 @@ def get_retriever(k: int = 3, persist_directory: str = DEFAULT_CHROMA_DIR):
     Returns:
         VectorStoreRetriever instance.
     """
-    vectorstore = build_or_load_vectorstore(persist_directory=persist_directory)
-    return vectorstore.as_retriever(search_kwargs={"k": k})
+    global _CACHED_RETRIEVER
+    if _CACHED_RETRIEVER is None:
+        vectorstore = build_or_load_vectorstore(persist_directory=persist_directory)
+        _CACHED_RETRIEVER = vectorstore.as_retriever(search_kwargs={"k": k})
+    return _CACHED_RETRIEVER
 
 
 if __name__ == "__main__":

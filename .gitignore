@@ -1,4 +1,4 @@
-﻿# Python Environment & Bytecode
+# Python Environment & Bytecode
 venv/
 .venv/
 env/
@@ -14,6 +14,7 @@ __pycache__/
 # Local Vector Database & Cache
 .chroma/
 chroma_db/
+data/chroma_db/
 *.db
 *.sqlite3
 
@@ -24,4 +25,3 @@ chroma_db/
 
 # Evaluation & Testing Artifacts
 .ragas/
-eval_results.json

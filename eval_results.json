@@ -1,0 +1,21 @@
+{
+  "benchmark_summary": {
+    "faithfulness_score": 1.0,
+    "answer_relevance_score": 1.0,
+    "total_scenarios": 1,
+    "status": "PASSED"
+  },
+  "detailed_results": [
+    {
+      "test_id": "TC-01",
+      "category": "In-Domain (Hardware Specifications & Factual Grounding)",
+      "question": "What is the memory requirement for the Nexus-X Protocol?",
+      "generation": "The Nexus-X Protocol requires a minimum operational memory of 8GB unified VRAM.",
+      "ground_truth": "The Nexus-X engine requires a minimum operational memory of 8GB unified VRAM.",
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "latency_seconds": 10.32,
+      "source_chunks_used": 1
+    }
+  ]
+}

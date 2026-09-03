@@ -40,7 +40,7 @@ def retrieve(state: GraphState) -> Dict[str, Any]:
     Returns:
         Dictionary update containing the retrieved documents.
     """
-    print("--- [NODE] RETRIEVE: Querying local ChromaDB vector store ---")
+    print("--- [NODE] RETRIEVE: Querying local ChromaDB vector store ---", flush=True)
     question = state["question"]
     retriever = get_retriever(k=3)
     documents = retriever.invoke(question)
@@ -81,15 +81,16 @@ def grade_documents(state: GraphState) -> Dict[str, Any]:
                 filtered_docs.append(doc)
             else:
                 print("  -> Grade: [IRRELEVANT] - Discarding chunk")
-                web_search_needed = True
         except Exception as e:
             print(f"  -> Grading fallback due to error ({e}) - Retaining chunk")
             filtered_docs.append(doc)
 
-    # If all documents were filtered out, web search is mandatory
-    if not filtered_docs:
+    # Web search is only required if all local chunks were filtered out
+    web_search_needed = (len(filtered_docs) == 0)
+    if web_search_needed:
         print("  -> All local chunks were irrelevant. Web search flagged as mandatory.")
-        web_search_needed = True
+    else:
+        print(f"  -> Preserved {len(filtered_docs)} relevant chunk(s). Local context sufficient; skipping web search.")
 
     return {"documents": filtered_docs, "web_search_needed": web_search_needed}
 

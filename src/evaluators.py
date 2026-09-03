@@ -64,6 +64,7 @@ def get_judge_llm(temperature: float = 0):
             model_name="qwen/qwen3.8-27b",
             temperature=temperature,
             api_key=groq_api_key,
+            request_timeout=25,
         )
 
     # Check for valid OpenAI key
@@ -72,12 +73,14 @@ def get_judge_llm(temperature: float = 0):
             model_name="gpt-4o-mini",
             temperature=temperature,
             api_key=openai_api_key,
+            request_timeout=25,
         )
 
     # Default fallback: Groq instance
     return ChatGroq(
         model_name="qwen/qwen3.8-27b",
         temperature=temperature,
+        request_timeout=25,
     )
 
 
