@@ -126,7 +126,7 @@ The benchmark was executed against controlled sample knowledge documents to eval
 | **End-to-End Latency** | **10.32 seconds** | $< 15.0\text{s}$ | Optimal |
 | **Self-Correction Circuit Breaker** | **0 Breaches** | $0$ | Passed |
 
-> [!CAUTION]
+> [!IMPORTANT]
 > **Evaluation Methodology and Scope Note**
 > 
 > The metrics reported above reflect unit-level verification conducted on a controlled sample knowledge corpus to test that the self-corrective loops, relevance filtering, and hallucination grading mechanisms execute accurately. Because individual unit scenarios are evaluated using binary LLM judges (`yes` / `no`), unit verification scores are inherently discrete (1.0 or 0.0).
